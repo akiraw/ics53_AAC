@@ -1,0 +1,16 @@
+//Lab2.c
+//Akira Wong
+//78808739
+//Due April 29, 2016
+
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+
+int main() {
+	char userInputBuffer[255];
+	printf("prompt> ");
+	
+
+	return 0;
+}
