@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -7,7 +8,7 @@
 
 extern char **environ;
 
-void getUserInput(char * uiBuffer);
+int getUserInput(char * uiBuffer);
 int parseUserInput(char tokenArray[][256], const char * uiBuffer);
 void printTokens( char tokenArray[][256], int numTokens);
 
@@ -19,7 +20,12 @@ int main() {
 	while ( ctrloop ) {
 	
 		//Prompt and enter user input
-		getUserInput(uiBuffer);
+		int bufferLength = getUserInput(uiBuffer);
+		bool background = false;
+		if ( (bufferLength != 0 ) && (uiBuffer[bufferLength-1] == '&')) {
+			background = true;
+			uiBuffer[bufferLength - 1] = '\0';
+		}
 		//print statement for debugging
 		printf("You entered: \n %s \n", uiBuffer);
 		
@@ -37,22 +43,36 @@ int main() {
 		argv[count] = NULL;
 		
 		// execute instruction
-		
-		printf("Executing instructions... \n");
-		execve(argv[0], argv, environ);
-		
-		//interpretLoop = false;
-			/*
-			if ( strcmp("quit", tokenBuffer) == 0)
-				interpretLoop = false;
+		if ( strcmp("quit", tokenArray[0]) == 0)
 				ctrloop = false;
-			*/
-		//}
+		else {
+			printf("Executing instructions... \n");
+			pid_t wpid;
+			int status;
+			pid_t pid = fork();
+			
+			if ( pid == 0 ) {
+				printf("Executing instruction from child \n");
+				if (execve(argv[0], argv, environ) == -1)
+					printf("exec error \n");
+				exit(EXIT_FAILURE);
+			} else if( pid <  0) {
+				//Error forking
+				printf("fork error \n");
+			} else {
+				//Parent process
+				do {
+					printf("Waiting for child process to terminate \n");
+					wpid = waitpid(pid, &status, 0);
+				} while( !WIFEXITED(status));
+			}
+			printf("done with process \n");
+		}
 	}
 	return 0;
 }
 
-void getUserInput(char * uiBuffer) {
+int getUserInput(char * uiBuffer) {
 	bool uiloop = true;
 	printf("prompt> ");
 	//Get User Input
@@ -66,6 +86,7 @@ void getUserInput(char * uiBuffer) {
 		}	else 
 			uiBuffer[index++] = c;
 	}
+	return index;
 }
 
 int parseUserInput(char tokenArray[][256], const char * uiBuffer)
