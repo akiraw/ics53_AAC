@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+extern char **environ;
 
 void getUserInput(char * uiBuffer);
 int parseUserInput(char tokenArray[][256], const char * uiBuffer);
@@ -24,9 +29,18 @@ int main() {
 		//print token array for debugging
 		printTokens(tokenArray, count);
 		
-		//bool interpretLoop = true;
-		//while (interpretLoop) {
-			
+		//assign matrix of characters into an array of pointers to C strings.
+		char *argv[129];
+		for (int i = 0 ; i < count; ++i) {
+			argv[0] = tokenArray[0];
+		}
+		argv[count] = NULL;
+		
+		// execute instruction
+		
+		printf("Executing instructions... \n");
+		execve(argv[0], argv, environ);
+		
 		//interpretLoop = false;
 			/*
 			if ( strcmp("quit", tokenBuffer) == 0)
