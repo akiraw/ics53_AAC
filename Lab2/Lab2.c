@@ -8,7 +8,7 @@
 
 extern char **environ;
 
-int getUserInput(char * uiBuffer);
+void getUserInput(char * uiBuffer);
 int parseUserInput(char tokenArray[][256], const char * uiBuffer);
 void printTokens( char tokenArray[][256], int numTokens);
 
@@ -20,7 +20,10 @@ int main() {
 	while ( ctrloop ) {
 	
 		//Prompt and enter user input
-		int bufferLength = getUserInput(uiBuffer);
+		getUserInput(uiBuffer);
+		int bufferLength = strlen(uiBuffer);
+		
+		//background/foreground process handling
 		bool background = false;
 		if ( (bufferLength != 0 ) && (uiBuffer[bufferLength-1] == '&')) {
 			background = true;
@@ -38,14 +41,16 @@ int main() {
 		//assign matrix of characters into an array of pointers to C strings.
 		char *argv[129];
 		for (int i = 0 ; i < count; ++i) {
-			argv[0] = tokenArray[0];
+			argv[i] = tokenArray[i];
 		}
 		argv[count] = NULL;
 		
 		// execute instruction
-		if ( strcmp("quit", tokenArray[0]) == 0)
-				ctrloop = false;
-		else {
+		if ( strcmp("quit", tokenArray[0]) == 0) {
+			//quit built it
+			ctrloop = false;
+				
+		} else {
 			printf("Executing instructions... \n");
 			pid_t wpid;
 			int status;
@@ -61,10 +66,12 @@ int main() {
 				printf("fork error \n");
 			} else {
 				//Parent process
-				do {
-					printf("Waiting for child process to terminate \n");
-					wpid = waitpid(pid, &status, 0);
-				} while( !WIFEXITED(status));
+				if ( !background) {
+					do {
+						printf("Waiting for child process to terminate \n");
+						wpid = waitpid(pid, &status, 0);
+					} while( !WIFEXITED(status));
+				}
 			}
 			printf("done with process \n");
 		}
@@ -72,7 +79,7 @@ int main() {
 	return 0;
 }
 
-int getUserInput(char * uiBuffer) {
+void getUserInput(char * uiBuffer) {
 	bool uiloop = true;
 	printf("prompt> ");
 	//Get User Input
@@ -86,7 +93,6 @@ int getUserInput(char * uiBuffer) {
 		}	else 
 			uiBuffer[index++] = c;
 	}
-	return index;
 }
 
 int parseUserInput(char tokenArray[][256], const char * uiBuffer)
@@ -111,7 +117,8 @@ int parseUserInput(char tokenArray[][256], const char * uiBuffer)
 			//just loops if there is a leading space
 		}
 		tokenBuffer[tIndex] = '\0';
-		strcpy(tokenArray[tokenCounter++], tokenBuffer);
+		if ( strcmp(tokenBuffer, "") != 0 )
+			strcpy(tokenArray[tokenCounter++], tokenBuffer);
 	}
 	return tokenCounter;
 }
