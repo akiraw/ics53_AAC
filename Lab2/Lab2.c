@@ -1,3 +1,10 @@
+/*
+	lab2.c
+	Due April 29, 2016
+	Andrew Chang
+	Akira Wong
+	TuTh Section 12-2pm
+*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +18,7 @@ extern char **environ;
 void getUserInput(char * uiBuffer);
 int parseUserInput(char tokenArray[][256], const char * uiBuffer);
 void printTokens( char tokenArray[][256], int numTokens);
+void checkBackground(bool * backgroundRunning, pid_t * backgroundProcessIDs);
 
 int main() {
 	char uiBuffer[2048];
@@ -82,22 +90,27 @@ int main() {
 						}
 					}
 				}
-				
-				for ( int i = 0; i <  16; ++i) {
-					if ( backgroundRunning[i]) {
-						wpid = waitpid(backgroundProcessIDs[i], &status, WNOHANG);
-						if ( wpid > 0 ) {
-							printf("waitpid reaped background child");
-							backgroundRunning[i] = false;
-						}
-					}
-				}
+				checkBackground(backgroundRunning, backgroundProcessIDs);
 				
 			}
 			printf("done with process \n");
 		}
 	}
 	return 0;
+}
+
+void checkBackground(bool * backgroundRunning, pid_t * backgroundProcessIDs) {
+	int status;
+	pid_t wpid;
+	for ( int i = 0; i <  16; ++i) {
+		if ( backgroundRunning[i]) {
+			wpid = waitpid(backgroundProcessIDs[i], &status, WNOHANG);
+			if ( wpid > 0 ) {
+				printf("waitpid reaped background child \n");
+				backgroundRunning[i] = false;
+			}
+		}	
+	}
 }
 
 void getUserInput(char * uiBuffer) {
