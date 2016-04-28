@@ -14,7 +14,11 @@ void printTokens( char tokenArray[][256], int numTokens);
 
 int main() {
 	char uiBuffer[2048];
+	pid_t backgroundProcessIDs[16];
+	bool backgroundRunning[16];
 	bool ctrloop = true;
+	for ( int i = 0 ; i <  16; ++i )
+		backgroundRunning[i] = false;
 	
 	//Outer Control Loop
 	while ( ctrloop ) {
@@ -47,9 +51,8 @@ int main() {
 		
 		// execute instruction
 		if ( strcmp("quit", tokenArray[0]) == 0) {
-			//quit built it
+			//quit built in
 			ctrloop = false;
-				
 		} else {
 			printf("Executing instructions... \n");
 			pid_t wpid;
@@ -71,7 +74,25 @@ int main() {
 						printf("Waiting for child process to terminate \n");
 						wpid = waitpid(pid, &status, 0);
 					} while( !WIFEXITED(status));
+				} else {
+					for (int i = 0 ; i <  16; ++i) {
+						if ( !backgroundRunning[i]) {
+							backgroundProcessIDs[i] = pid;
+							backgroundRunning[i] = true;
+						}
+					}
 				}
+				
+				for ( int i = 0; i <  16; ++i) {
+					if ( backgroundRunning[i]) {
+						wpid = waitpid(backgroundProcessIDs[i], &status, WNOHANG);
+						if ( wpid > 0 ) {
+							printf("waitpid reaped background child");
+							backgroundRunning[i] = false;
+						}
+					}
+				}
+				
 			}
 			printf("done with process \n");
 		}
