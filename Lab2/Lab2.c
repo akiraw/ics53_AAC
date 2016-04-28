@@ -42,13 +42,13 @@ int main() {
 			uiBuffer[bufferLength - 1] = '\0';
 		}
 		//print statement for debugging
-		printf("You entered: \n %s \n", uiBuffer);
+		//printf("You entered: \n %s \n", uiBuffer);
 		
 		// parsing user input into array of c strings
 		char tokenArray[128][256];
 		int count = parseUserInput(tokenArray, uiBuffer);
 		//print token array for debugging
-		printTokens(tokenArray, count);
+		//printTokens(tokenArray, count);
 		
 		//assign matrix of characters into an array of pointers to C strings.
 		char *argv[129];
@@ -62,13 +62,13 @@ int main() {
 			//quit built in
 			ctrloop = false;
 		} else {
-			printf("Executing instructions... \n");
+			//printf("Executing instructions... \n");
 			pid_t wpid;
 			int status;
 			pid_t pid = fork();
 			
 			if ( pid == 0 ) {
-				printf("Executing instruction from child \n");
+				//printf("Executing instruction from child \n");
 				if (execve(argv[0], argv, environ) == -1)
 					printf("exec error \n");
 				exit(EXIT_FAILURE);
@@ -79,7 +79,7 @@ int main() {
 				//Parent process
 				if ( !background) {
 					do {
-						printf("Waiting for child process to terminate \n");
+						//printf("Waiting for child process to terminate \n");
 						wpid = waitpid(pid, &status, 0);
 					} while( !WIFEXITED(status));
 				} else {
@@ -93,7 +93,7 @@ int main() {
 				checkBackground(backgroundRunning, backgroundProcessIDs);
 				
 			}
-			printf("done with process \n");
+			//printf("done with process \n");
 		}
 	}
 	return 0;
@@ -106,7 +106,7 @@ void checkBackground(bool * backgroundRunning, pid_t * backgroundProcessIDs) {
 		if ( backgroundRunning[i]) {
 			wpid = waitpid(backgroundProcessIDs[i], &status, WNOHANG);
 			if ( wpid > 0 ) {
-				printf("waitpid reaped background child \n");
+				//printf("waitpid reaped background child \n");
 				backgroundRunning[i] = false;
 			}
 		}	
